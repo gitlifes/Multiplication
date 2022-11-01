@@ -1,48 +1,42 @@
 import {useState, useRef} from 'react';
-import { Menu } from './component/menu';
+import { Menu } from './component/Menu';
 import { Keyboard } from './component/Keyboard/Keyboard'
 import { Message } from './component/Message'
 import { MathExpression } from './component/MathExpression'
+import { setMultiplication, setDevision, setResult } from './features/count/countSlice'
+import { setFirstNumber, setSecondNumber } from './features/count/countSlice';
+import { useAppDispatch, useAppSelector } from './app/hooks'
+
 
 function App() {
+
+  const dispatch = useAppDispatch()
+  const operationToggle = useAppSelector((state) => state.count.operationToggle)
+  const firstNumber = useAppSelector((state) => state.count.firstNumber)
+  const secondNumber = useAppSelector((state) => state.count.secondNumber)
+  const result = useAppSelector((state) => state.count.result)
   
-  const [operationToggle, setOperationToggle] = useState(true)
-  const [firstNumber, setFirstNumber] = useState(randomInteger())
-  const [secondNumber, setSecondNumber] = useState(randomInteger())
-  const [result, setResult] = useState('')
   const [correctAnswer, setCorrectAnswer] = useState(false)                      
   const [vrongAnswer, setWrongAnswer] = useState(false)
 
   const inputRef = useRef<HTMLInputElement>(null)
 
-  const multiplication = () => {
-    setOperationToggle(true)
-    setResult('')
-    setSecondNumber(1)
-  }
-
-  const division = () => {
-    setOperationToggle(false)
-    setResult('')
-    setSecondNumber(1)
-  }
-
   function typing(number: string) {
     if (result.length <= 1) {
       if(result !== '0') {
-        setResult(prev => (prev + number))
+        dispatch(setResult(result + number))
       } else {
-        setResult(number)
+        dispatch(setResult(number))
       }
     }
-    console.log(inputRef.current)
+ 
     if (null !== inputRef.current){
       inputRef.current.value = result
     }
   }
 
   function backspace() {
-    setResult(prev => prev.slice(0, prev.length-1))
+    dispatch(setResult(result.slice(0, result.length-1)))
   }
 
   function randomInteger() {
@@ -53,15 +47,15 @@ function App() {
   function answerWrong() {
     setWrongAnswer(true)
     setTimeout(() => setWrongAnswer(false), 1000)
-    setResult('')
+    dispatch(setResult(''))
   }
 
   function answerCorrect() {
     setCorrectAnswer(true)
     setTimeout(() => setCorrectAnswer(false), 1000)
-    setSecondNumber(randomInteger())
-    setFirstNumber(randomInteger())
-    setResult('')
+    dispatch(setSecondNumber(randomInteger()))
+    dispatch(setFirstNumber(randomInteger()))
+    dispatch(setResult(''))
   }
 
   function enter() {
@@ -86,14 +80,10 @@ function App() {
  
   return (
     <>
-      <Menu div={division} mul={multiplication}/>
+      <Menu/>
       <Message correctAnswer={correctAnswer} vrongAnswer={vrongAnswer} /> 
       <MathExpression
-        firstNumber={firstNumber}
-        secondNumber={secondNumber}
-        operationToggle={operationToggle}
         inputRef={inputRef}
-        result={result}
       />
       <Keyboard typing={typing} backspace={backspace} enter={enter}/>
     </>
